@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mathematical Research Supervisor"
+  short_description: "Audit and steer a separate research Agent"
+  default_prompt: "Use $math-research-auditor as the read-only Supervisor: audit the Research Agent's latest commit and send exactly one CONTINUE, REPAIR, SWITCH_ROUTE, NEW_BATCH, or STOP decision."

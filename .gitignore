@@ -1,0 +1,34 @@
+# Codex 每轮的原始终端输出（研究结论已写入受版本控制的 Markdown）
+runs/
+*.log
+
+# 下载的论文与临时文献缓存；定理卡中保留稳定链接和精确引用
+papers/
+
+# 编辑器与操作系统文件
+.vscode/
+.idea/
+.DS_Store
+*~
+*.swp
+*.swo
+
+# Python / notebook 缓存
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# LaTeX 构建产物
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+*.synctex.gz
+*.toc
+
+# 通用临时文件
+*.tmp
+*.temp
+.cache/

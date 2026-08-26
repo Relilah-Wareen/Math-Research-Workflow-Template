@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "parent_decision_id",
+    "executed_action",
+    "executed_gap",
+    "outcome",
+    "summary",
+    "commit_message"
+  ],
+  "properties": {
+    "parent_decision_id": {
+      "type": "string"
+    },
+    "executed_action": {
+      "type": "string",
+      "enum": [
+        "counted_round",
+        "repair",
+        "route_scout",
+        "new_batch"
+      ]
+    },
+    "executed_gap": {
+      "type": "string"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "success",
+        "strict_exclusion",
+        "failed",
+        "noncounting",
+        "repair"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "commit_message": {
+      "type": "string"
+    }
+  }
+}

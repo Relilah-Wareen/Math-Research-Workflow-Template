@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "decision",
+    "audited_base",
+    "audited_commit",
+    "reason",
+    "next_task",
+    "batch_limit",
+    "audit_interval",
+    "authorized_action",
+    "authorized_gap",
+    "superseded_gap",
+    "forbidden_routes",
+    "reopen_routes"
+  ],
+  "properties": {
+    "decision": {
+      "type": "string",
+      "enum": [
+        "CONTINUE",
+        "REPAIR",
+        "SWITCH_ROUTE",
+        "NEW_BATCH",
+        "STOP"
+      ]
+    },
+    "audited_base": {
+      "type": "string"
+    },
+    "audited_commit": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "next_task": {
+      "type": "string"
+    },
+    "batch_limit": {
+      "type": "integer"
+    },
+    "audit_interval": {
+      "type": "integer"
+    },
+    "authorized_action": {
+      "type": "string",
+      "enum": [
+        "counted_round",
+        "repair",
+        "route_scout",
+        "new_batch",
+        "stop"
+      ]
+    },
+    "authorized_gap": {
+      "type": "string"
+    },
+    "superseded_gap": {
+      "type": "string"
+    },
+    "forbidden_routes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "reopen_routes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
