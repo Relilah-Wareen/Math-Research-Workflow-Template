@@ -118,5 +118,5 @@ description: Audit mathematical research units and issue the next structured dec
 `batch_limit` 为 2–8，`audit_interval` 为 1–3。新路线、脆弱结论、失败、修复或文献敏感时用 1；
 只有近期计数单元连续通过且依赖链清晰时才用 2 或 3。间隔审核仍须逐个检查整个区间。
 
-下一次 Researcher 调用由外层脚本调度。Supervisor 返回 JSON 后结束，不发送共享 Agent 控制消息，
+下一次 Researcher 调用由外层脚本依据结构化授权调度。Supervisor 返回 JSON 后结束，
 不将沉默当作批准，也不自行执行授权任务。

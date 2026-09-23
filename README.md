@@ -1,6 +1,6 @@
 # Math Research Workflow Template
 
-从 `INS-Source-Carleman` 的现行工作流提炼，参照 `Anisotropic-Calderon`，不携带具体数学问题或历史路线。
+一个独立、通用的数学研究工作流模板，用于文献检索、双向证明搜索、逐步验证与自动审计。
 
 **也可以直接向 Codex 提问，让它查看仓库并指导使用。** 例如：“请阅读这个仓库的 README，
 指导我填写研究命题、选择模型并启动工作流。”
@@ -52,7 +52,7 @@
 Supervisor 返回 `STOP` 后不能 `resume`，处理原因后用 `start` 重新审核。
 
 `--model MODEL_ID`（或 `-m MODEL_ID`）为两种角色选择模型，优先于 `CODEX_MODEL` 环境变量；
-两者都未指定时沿用默认 `gpt-6-astra`。使用 5.6、6 或以后的模型时，传入当前 Codex 环境中
+两者都未指定时默认使用 `gpt-6-astra`。使用 5.6、6 或以后的模型时，传入当前 Codex 环境中
 可用的完整模型标识即可；脚本不限定模型列表，也不将简称自动映射为某个模型。
 每次 `start` / `resume` 都按本次参数与环境选模型；恢复时也可以更换模型。
 参数帮助：`./scripts/run_research_supervisor_loop.sh --help`。
@@ -76,8 +76,7 @@ Supervisor 返回 `STOP` 后不能 `resume`，处理原因后用 `start` 重新�
 | `control/route_registry.json` | 路线状态与重开证据 |
 | `iteration_state.json`、`work_log.md` | 数学状态、计数与工作记录 |
 
-旧版分散的批次、单轮和 scout 指导已合并到以上流程文件；移除的是重复入口和冲突的旧协议。
-完整研究步骤与现行初始化、编排、停止脚本保留，检索记录统一写入工作日志。
+研究步骤由角色提示词和审计 Skill 定义，脚本负责初始化、编排与停止，检索记录写入工作日志。
 
 测试使用临时仓库和模拟 Agent，不调用模型：
 
