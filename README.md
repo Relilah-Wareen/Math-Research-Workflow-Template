@@ -2,6 +2,9 @@
 
 从 `INS-Source-Carleman` 的现行工作流提炼，参照 `Anisotropic-Calderon`，不携带具体数学问题或历史路线。
 
+**也可以直接向 Codex 提问，让它查看仓库并指导使用。** 例如：“请阅读这个仓库的 README，
+指导我填写研究命题、选择模型并启动工作流。”
+
 唯一执行流程：**Supervisor 只读审核 → Researcher 完成一个授权单元 → 外层脚本校验并提交 → 再审核**。
 每次调用使用新进程，通过文件交接；Researcher 不操作 Git，脚本只做本地提交。
 
@@ -28,7 +31,7 @@
 终端一：
 
 ```bash
-./scripts/run_research_supervisor_loop.sh start --max-tokens 200000
+./scripts/run_research_supervisor_loop.sh start --model gpt-6-astra --max-tokens 200000
 ```
 
 终端二查看状态或请求安全停止：
@@ -41,14 +44,19 @@
 停止请求在当前 Agent 完成后生效。等待编排退出，再恢复：
 
 ```bash
-./scripts/run_research_supervisor_loop.sh resume --max-tokens 400000
+./scripts/run_research_supervisor_loop.sh resume --model gpt-6-astra --max-tokens 400000
 ```
 
 `--max-tokens` 为累计输入与输出 token 的停止阈值，省略或设为 `0` 表示不限。
 它在 Agent 调用之间检查，单次调用可能越过阈值；恢复时传入新的累计上限。
 Supervisor 返回 `STOP` 后不能 `resume`，处理原因后用 `start` 重新审核。
 
-沿用来源项目的默认模型 `gpt-6-astra`，可通过 `CODEX_MODEL` 覆盖。
+`--model MODEL_ID`（或 `-m MODEL_ID`）为两种角色选择模型，优先于 `CODEX_MODEL` 环境变量；
+两者都未指定时沿用默认 `gpt-6-astra`。使用 5.6、6 或以后的模型时，传入当前 Codex 环境中
+可用的完整模型标识即可；脚本不限定模型列表，也不将简称自动映射为某个模型。
+每次 `start` / `resume` 都按本次参数与环境选模型；恢复时也可以更换模型。
+参数帮助：`./scripts/run_research_supervisor_loop.sh --help`。
+
 瞬时网络/容量错误默认最多重试 5 次，可用 `RESEARCH_LOOP_MAX_RETRIES` 调整，设为 `0` 关闭；
 若失败调用已修改工作树或 HEAD，则停止供检查，避免重复执行同一研究单元。
 状态、token 统计、授权和原始日志位于 `runs/research_supervisor_loop/`，不进入 Git。
@@ -58,14 +66,18 @@ Supervisor 返回 `STOP` 后不能 `resume`，处理原因后用 `start` 重新�
 | 文件 | 用途 |
 | --- | --- |
 | `AGENTS.md` | 目标锁定、双向研究与验证规则 |
-| `prompts/researcher.md`、`prompts/supervisor.md` | 两个角色的执行入口 |
-| `.agents/skills/math-research-auditor/SKILL.md` | 审核方法与决定标准 |
+| `prompts/researcher.md` | 完整单轮闭环、文献核验、路线探索、修复、分批与交接 |
+| `prompts/supervisor.md` | 只读审核入口、授权协议与结构化决定 |
+| `.agents/skills/math-research-auditor/SKILL.md` | 逐项数学审计、计数回滚、路线质量与决定标准 |
 | `scripts/` | 初始化、编排、停止、JSON 协议与回归测试 |
 | `notes/` | 唯一题目、附加假设、精简交接 |
 | `frontiers/`、`proof/`、`audit/` | 正反向前沿、证明依赖和逐次审计（按需创建） |
 | `literature/` | 用户文献与核实后的定理卡 |
 | `control/route_registry.json` | 路线状态与重开证据 |
 | `iteration_state.json`、`work_log.md` | 数学状态、计数与工作记录 |
+
+旧版分散的批次、单轮和 scout 指导已合并到以上流程文件；移除的是重复入口和冲突的旧协议。
+完整研究步骤与现行初始化、编排、停止脚本保留，检索记录统一写入工作日志。
 
 测试使用临时仓库和模拟 Agent，不调用模型：
 

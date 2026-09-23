@@ -42,7 +42,8 @@ while (($#)); do
     *) shift;;
   esac
 done
-[[ "$model" == fixture-model ]]
+[[ "$model" == "${EXPECTED_MODEL:-fixture-model}" ]]
+printf '%s\t%s\n' "${schema##*/}" "$model" >> "$root/runs/models.log"
 prompt="$(cat)"
 head="$(git -C "$root" rev-parse HEAD)"; base="$(git -C "$root" rev-parse HEAD^)"
 if [[ "$schema" == *supervisor_decision* ]]; then
@@ -85,7 +86,7 @@ FAKE
 }
 
 run_loop(){
-  PATH="$root/bin:$PATH" RESEARCH_LOOP_ROOT="$root" CODEX_MODEL=fixture-model \
+  PATH="$root/bin:$PATH" RESEARCH_LOOP_ROOT="$root" CODEX_MODEL="${TEST_MODEL_ENV-fixture-model}" \
     RESEARCH_LOOP_MAX_RETRIES=1 RESEARCH_LOOP_RETRY_BASE_SECONDS=0 \
     bash "$PROJECT/scripts/run_research_supervisor_loop.sh" "$@"
 }
@@ -153,3 +154,39 @@ jq -e '.final_goal_status=="open"' "$root/iteration_state.json" >/dev/null
 run_loop start --max-tokens 15 --pause 0 > "$root/runs/setup.log" 2>&1
 jq -e '.supervisor_runs==1' "$root/runs/research_supervisor_loop/orchestrator_state.json" >/dev/null
 echo 'PASS: proposition without user references'
+
+# CLI model overrides the environment for both roles, with no fixed model list.
+for model_id in gpt-5.6-sol gpt-6-astra future-provider/new-model; do
+  CASE=model_option; export CASE
+  root="$TEST_ROOT/model_${model_id//\//_}"; fixture "$root"
+  EXPECTED_MODEL="$model_id" run_loop start --model "$model_id" --pause 0 > "$root/runs/model.log" 2>&1
+  [[ "$(git -C "$root" rev-list --count HEAD)" == 3 ]]
+  [[ "$(wc -l < "$root/runs/models.log")" == 3 ]]
+  echo "PASS: model option $model_id (simulated)"
+done
+
+# Budget stop/resume permits changing the model, including the -m alias.
+CASE=model_resume; export CASE
+root="$TEST_ROOT/model_resume"; fixture "$root"
+EXPECTED_MODEL=first-model run_loop start --model first-model --max-tokens 15 --pause 0 > "$root/runs/model.log" 2>&1
+EXPECTED_MODEL=next-model run_loop resume -m next-model --pause 0 >> "$root/runs/model.log" 2>&1
+[[ "$(git -C "$root" rev-list --count HEAD)" == 3 ]]
+[[ "$(wc -l < "$root/runs/models.log")" == 3 ]]
+echo 'PASS: resume with a different model'
+
+# Without CLI or environment selection, preserve the prior default.
+CASE=model_default; export CASE
+root="$TEST_ROOT/model_default"; fixture "$root"
+TEST_MODEL_ENV='' EXPECTED_MODEL=gpt-6-astra run_loop start --pause 0 > "$root/runs/model.log" 2>&1
+[[ "$(git -C "$root" rev-list --count HEAD)" == 3 ]]
+echo 'PASS: default model'
+
+CASE=model_invalid; export CASE
+root="$TEST_ROOT/model_invalid"; fixture "$root"
+rc=0; run_loop start --model > "$root/runs/model.log" 2>&1 || rc=$?
+[[ "$rc" == 2 ]]
+rc=0; run_loop start --model '' > "$root/runs/model.log" 2>&1 || rc=$?
+[[ "$rc" == 2 ]]
+rc=0; run_loop start --model --pause 0 > "$root/runs/model.log" 2>&1 || rc=$?
+[[ "$rc" == 2 && ! -e "$root/runs/models.log" && ! -e "$root/runs/research_supervisor_loop/orchestrator_state.json" ]]
+echo 'PASS: missing or empty model rejected before starting'

@@ -10,10 +10,28 @@ CODEX_MODEL="${CODEX_MODEL:-gpt-6-astra}"
 MAX_RETRIES="${RESEARCH_LOOP_MAX_RETRIES:-5}"
 RETRY_BASE_SECONDS="${RESEARCH_LOOP_RETRY_BASE_SECONDS:-15}"
 
-usage(){ echo "用法: $0 start|resume|status [--max-tokens N] [--pause N]"; }
-for c in codex jq git sed tee awk sha256sum; do command -v "$c" >/dev/null || { echo "缺少 $c" >&2; exit 1; }; done
+usage(){
+  echo "用法: $0 start|resume|status [--model MODEL_ID] [--max-tokens N] [--pause N]"
+  echo "模型选择: --model（或 -m）优先于 CODEX_MODEL；省略时默认 gpt-6-astra。"
+  echo "模型标识直接传给 Codex，不限制版本；start 和 resume 均可指定。"
+}
 mode="${1:-}"; shift || true
-while (($#)); do case "$1" in --max-tokens) MAX_TOKENS="${2:-}"; shift 2;; --pause) PAUSE_SECONDS="${2:-}"; shift 2;; *) usage; exit 2;; esac; done
+[[ "$mode" == --help || "$mode" == -h ]] && { usage; exit 0; }
+while (($#)); do
+  case "$1" in
+    --model|-m|--max-tokens|--pause)
+      (($# >= 2)) && [[ -n "$2" && "$2" != -* ]] || { echo "参数 $1 缺少有效值" >&2; usage >&2; exit 2; }
+      case "$1" in
+        --model|-m) CODEX_MODEL="$2";;
+        --max-tokens) MAX_TOKENS="$2";;
+        --pause) PAUSE_SECONDS="$2";;
+      esac
+      shift 2;;
+    --help|-h) usage; exit 0;;
+    *) usage >&2; exit 2;;
+  esac
+done
+for c in codex jq git sed tee awk sha256sum; do command -v "$c" >/dev/null || { echo "缺少 $c" >&2; exit 1; }; done
 [[ "$MAX_TOKENS" =~ ^[0-9]+$ && "$PAUSE_SECONDS" =~ ^[0-9]+$ && "$MAX_RETRIES" =~ ^[0-9]+$ && "$RETRY_BASE_SECONDS" =~ ^[0-9]+$ ]] || exit 2
 mkdir -p "$RUN_ROOT"
 if [[ "$mode" == status ]]; then [[ -f "$STATE" ]] && jq . "$STATE" || echo "尚无状态"; [[ -e "$STOP_FILE" ]] && echo "安全停止请求：已设置" || echo "安全停止请求：未设置"; exit 0; fi
