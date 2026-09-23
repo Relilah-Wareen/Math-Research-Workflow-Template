@@ -4,7 +4,7 @@
   "completed_iterations": 0,
   "total_iterations": 0,
   "final_goal_status": "setup_required",
-  "current_gap": "SETUP_REQUIRED:fill_and_lock_problem_statement_and_references",
+  "current_gap": "SETUP_REQUIRED:fill_and_lock_problem_statement",
   "last_iteration_summary": "Workflow template created with no mathematical proposition loaded.",
   "stop_reason": "user_must_fill_problem_statement_and_set_setup_status_locked"
 }
